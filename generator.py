@@ -5,6 +5,7 @@ class Generator():
 	def __init__(self, metadata, im_size):
 		self.metadata = metadata
 		self.im_size = im_size
+		self.im_shape = (im_size, im_size)
 		self.index = 0
 
 	def next(self, batch_size=None):
@@ -25,7 +26,7 @@ class Generator():
 		labels = [None]*batch_size
 		for i in range(len(batch)):
 			row = batch[i]
-			images[i] = imresize(imread(row['path']), (im_size, im_size)).flatten()
+			images[i] = imresize(imread(row['path']), self.im_shape).flatten()
 			labels[i] = row['label']
 
 		images = np.array(images)
