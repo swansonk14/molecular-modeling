@@ -9,12 +9,11 @@ import json
 from generator import Generator
 from collections import Counter
 np.random.seed(0)
-from sklearn import metrics
 from sklearn.model_selection import train_test_split
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from tqdm import tqdm
+# from tqdm import tqdm
 
 """ Load the metadata """
 with open('metadata/metadata.json', 'r') as f:
@@ -254,7 +253,8 @@ def main(_):
 			plot(train_accuracies, train_losses, test_accuracies, test_losses)
 			
 			# Train
-			for i in tqdm(range(batches_per_epoch)):
+			# for i in tqdm(range(batches_per_epoch)):
+			for i in range(batches_per_epoch):
 				train_X, train_Y = train_generator.next(batch_size)
 				train_step.run(feed_dict={x: train_X, y_: train_Y, keep_prob: 0.5})
 
