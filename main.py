@@ -20,7 +20,7 @@ with open('metadata/metadata.json', 'r') as f:
 	metadata = json.load(f)
 
 """ Restrict data """
-data_size = None
+data_size = 100
 temps = [0.4]
 rhos = [0.05, 0.10]
 
@@ -67,21 +67,13 @@ n_outputs = len(unique_labels)
 """ Create batch generators for train and test """
 train_metadata, test_metadata = train_test_split(metadata, test_size=0.2, random_state=0)
 
-train_counts = Counter(row['original_label'] for row in train_metadata)
-test_counts = Counter(row['original_label'] for row in test_metadata)
-
-print('train counts')
-print(train_counts)
-print('test counts')
-print(test_counts)
-
 train_generator = Generator(train_metadata, im_size=im_size)
 test_generator = Generator(test_metadata, im_size=im_size)
 
 """ Hyperparameters """
-iterations = 20000
+iterations = 30
 eta = 1e-4
-batch_size = 30
+batch_size = 10
 beta = 0.01
 
 """ Function that builds the graph for the neural network """
@@ -173,6 +165,19 @@ def main(_):
 		# Initialize variables
 		sess.run(tf.global_variables_initializer())
 
+		# Print class balance
+		train_counts = Counter(row['original_label'] for row in train_generator.metadata)
+		test_counts = Counter(row['original_label'] for row in test_generator.metadata)
+
+		print('')
+		print('class balance')
+		print('')
+		print('train counts')
+		print(train_counts)
+		print('test counts')
+		print(test_counts)
+		print('')
+
 		# Print hyperparameters
 		print('iterations = %d, eta = %g, batch_size = %g' % (iterations, eta, batch_size))
 		print('temperatures')
@@ -181,11 +186,14 @@ def main(_):
 		print(rhos)
 
 		# Training
+		print('Training')
 		for i in range(iterations):
+			print('iteration {}'.format(i))
 
 			# Evaluate
 			if i % 10 == 0:
 
+				print('Evaluating')
 				# Evaluate on train set
 				train_batch_accuracies = []
 				train_batch_losses = []
