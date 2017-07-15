@@ -3,7 +3,7 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
-# import tensorflow as tf
+import tensorflow as tf
 import numpy as np 
 import json
 from generator import Generator
@@ -60,6 +60,8 @@ unique_labels = get_unique_labels(metadata)
 one_hot_mapping = create_one_hot_mapping(unique_labels)
 metadata = convert_to_one_hot(metadata, one_hot_mapping)
 
+""" Define input and output sizes """
+im_size = 250
 n_outputs = len(unique_labels)
 
 """ Create batch generators for train and test """
@@ -73,8 +75,8 @@ print(train_counts)
 print('test counts')
 print(test_counts)
 
-train_generator = Generator(train_metadata)
-test_generator = Generator(test_metadata)
+train_generator = Generator(train_metadata, im_size=im_size)
+test_generator = Generator(test_metadata, im_size=im_size)
 
 """ Hyperparameters """
 iterations = 20000
@@ -139,7 +141,7 @@ def bias_variable(shape):
 
 def main(_):
 	# Input data
-	x = tf.placeholder(tf.float32, [None, train.im_size])
+	x = tf.placeholder(tf.float32, [None, im_size])
 
 	# Output
 	y_ = tf.placeholder(tf.float32, [None, n_outputs])

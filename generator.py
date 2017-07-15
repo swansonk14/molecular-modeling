@@ -1,9 +1,10 @@
-from scipy.misc import imread
+from scipy.misc import imread, imresize
 import numpy as np
 
 class Generator():
-	def __init__(self, metadata):
+	def __init__(self, metadata, im_size):
 		self.metadata = metadata
+		self.im_size = im_size
 		self.index = 0
 
 	def next(self, batch_size=None):
@@ -24,7 +25,7 @@ class Generator():
 		labels = [None]*batch_size
 		for i in range(len(batch)):
 			row = batch[i]
-			images[i] = imread(row['path']).flatten()
+			images[i] = imresize(imread(row['path']), (im_size, im_size)).flatten()
 			labels[i] = row['label']
 
 		images = np.array(images)
