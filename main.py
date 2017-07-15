@@ -13,7 +13,8 @@ from sklearn import metrics
 from sklearn.model_selection import train_test_split
 import matplotlib
 matplotlib.use('Agg')
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 """ Load the metadata """
 with open('metadata/metadata.json', 'r') as f:
@@ -72,8 +73,8 @@ test_generator = Generator(test_metadata, im_size=im_size)
 
 """ Hyperparameters """
 batch_size = 128
-iterations = 20000
-iterations_per_eval = 10
+epochs = 20000
+batches_per_epoch = 10
 examples_per_eval = 1000
 eta = 1e-4
 beta = 0.01
@@ -145,11 +146,11 @@ def plot(train_accuracies, train_losses, test_accuracies, test_losses):
 	plt.subplot(223)
 	plt.plot(range(len(train_accuracies)), train_accuracies)
 	plt.ylabel('Accuracy')
-	plt.xlabel('Number of iterations')
+	plt.xlabel('Number of epochs')
 
 	plt.subplot(224)
 	plt.plot(range(len(test_accuracies)), test_accuracies)
-	plt.xlabel('Number of iterations')
+	plt.xlabel('Number of epochs')
 
 	plt.savefig('10x10_5x5_error.png')
 
@@ -193,7 +194,6 @@ def main(_):
 
 		print('')
 		print('class balance')
-		print('')
 		print('train counts')
 		print(train_counts)
 		print('test counts')
@@ -201,64 +201,62 @@ def main(_):
 		print('')
 
 		# Print hyperparameters
-		print('iterations = %d, eta = %g, batch_size = %g' % (iterations, eta, batch_size))
+		print('epochs = %d, eta = %g, batch_size = %g' % (epochs, eta, batch_size))
 		print('temperatures')
 		print(temps)
 		print('densities')
 		print(rhos)
+		print('')
 
 		# Training
 		print('Training')
-		for i in range(iterations):
-			if i % 5 == 0:
-				print('iteration {}'.format(i))
+		for epoch in range(epochs):
+			print('epoch {}'.format(epoch))
+			print('Evaluating')
 
-			# Evaluate
-			if i % 25 == 0:
-				print('')
-				print('Evaluating')
-				# Evaluate on train set
-				train_batch_accuracies = []
-				train_batch_losses = []
-				for train_X, train_Y in train_generator.data_in_batches(examples_per_eval, batch_size):
-					train_batch_accuracies.append(accuracy.eval(feed_dict={
-							x: train_X, y_: train_Y, keep_prob: 1.0}))
+			# Evaluate on train set
+			train_batch_accuracies = []
+			train_batch_losses = []
+			for train_X, train_Y in train_generator.data_in_batches(examples_per_eval, batch_size):
+				train_batch_accuracies.append(accuracy.eval(feed_dict={
+						x: train_X, y_: train_Y, keep_prob: 1.0}))
 
-					train_batch_losses.append(loss.eval(feed_dict={
-							x: train_X, y_: train_Y, keep_prob: 1.0}))
+				train_batch_losses.append(loss.eval(feed_dict={
+						x: train_X, y_: train_Y, keep_prob: 1.0}))
 
-				train_accuracy = np.mean(train_batch_accuracies)
-				train_loss = np.mean(train_batch_losses)
+			train_accuracy = np.mean(train_batch_accuracies)
+			train_loss = np.mean(train_batch_losses)
 
-				train_accuracies.append(train_accuracy)
-				train_losses.append(train_loss)
+			train_accuracies.append(train_accuracy)
+			train_losses.append(train_loss)
 
-				# Evaluate on test set
-				test_batch_accuracies = []
-				test_batch_losses = []
-				for test_X, test_Y in test_generator.data_in_batches(examples_per_eval, batch_size):
-					test_batch_accuracies.append(accuracy.eval(feed_dict={
-							x: test_X, y_: test_Y, keep_prob: 1.0}))
+			# Evaluate on test set
+			test_batch_accuracies = []
+			test_batch_losses = []
+			for test_X, test_Y in test_generator.data_in_batches(examples_per_eval, batch_size):
+				test_batch_accuracies.append(accuracy.eval(feed_dict={
+						x: test_X, y_: test_Y, keep_prob: 1.0}))
 
-					test_batch_losses.append(loss.eval(feed_dict={
-							x: test_X, y_: test_Y, keep_prob: 1.0}))
+				test_batch_losses.append(loss.eval(feed_dict={
+						x: test_X, y_: test_Y, keep_prob: 1.0}))
 
-				test_accuracy = np.mean(test_batch_accuracies)
-				test_loss = np.mean(test_batch_losses)
+			test_accuracy = np.mean(test_batch_accuracies)
+			test_loss = np.mean(test_batch_losses)
 
-				test_accuracies.append(test_accuracy)
-				test_losses.append(test_loss)
+			test_accuracies.append(test_accuracy)
+			test_losses.append(test_loss)
 
-				print('step %d, training accuracy %g, train loss %g, ' \
-					'test accuracy %g, validation loss %g' %
-					(i, train_accuracy, train_loss, test_accuracy, test_loss))
-				print('')
+			print('training accuracy %g, train loss %g, ' \
+				'test accuracy %g, validation loss %g' %
+				(train_accuracy, train_loss, test_accuracy, test_loss))
+			print('')
 
-				plot(train_accuracies, train_losses, test_accuracies, test_losses)
+			plot(train_accuracies, train_losses, test_accuracies, test_losses)
 			
 			# Train
-			train_X, train_Y = train_generator.next(batch_size)
-			train_step.run(feed_dict={x: train_X, y_: train_Y, keep_prob: 0.5})
+			for i in tqdm(range(batches_per_epoch)):
+				train_X, train_Y = train_generator.next(batch_size)
+				train_step.run(feed_dict={x: train_X, y_: train_Y, keep_prob: 0.5})
 
 	plot(train_accuracies, train_losses, test_accuracies, test_losses)
 
