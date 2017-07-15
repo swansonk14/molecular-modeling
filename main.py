@@ -141,7 +141,7 @@ def bias_variable(shape):
 
 def main(_):
 	# Input data
-	x = tf.placeholder(tf.float32, [None, im_size])
+	x = tf.placeholder(tf.float32, [None, im_size*im_size])
 
 	# Output
 	y_ = tf.placeholder(tf.float32, [None, n_outputs])
