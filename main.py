@@ -189,7 +189,7 @@ def main(_):
 				# Evaluate on train set
 				train_batch_accuracies = []
 				train_batch_losses = []
-				for train_X, train_y in train_generator.all_data(batch_size):
+				for train_X, train_Y in train_generator.all_data(batch_size):
 					train_batch_accuracies.append(accuracy.eval(feed_dict={
 							x: train_X, y_: train_Y, keep_prob: 1.0}))
 
@@ -205,7 +205,7 @@ def main(_):
 				# Evaluate on test set
 				test_batch_accuracies = []
 				test_batch_losses = []
-				for test_X, test_y in test_generator.all_data(batch_size):
+				for test_X, test_Y in test_generator.all_data(batch_size):
 					test_batch_accuracies.append(accuracy.eval(feed_dict={
 							x: test_X, y_: test_Y, keep_prob: 1.0}))
 
