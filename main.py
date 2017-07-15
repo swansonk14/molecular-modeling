@@ -20,7 +20,7 @@ with open('metadata/metadata.json', 'r') as f:
 	metadata = json.load(f)
 
 """ Restrict data """
-data_size = 100
+data_size = 1000
 temps = [0.4]
 rhos = [0.05, 0.10]
 
@@ -71,9 +71,9 @@ train_generator = Generator(train_metadata, im_size=im_size)
 test_generator = Generator(test_metadata, im_size=im_size)
 
 """ Hyperparameters """
-iterations = 30
+iterations = 20000
 eta = 1e-4
-batch_size = 10
+batch_size = 128
 beta = 0.01
 
 """ Function that builds the graph for the neural network """
@@ -130,6 +130,26 @@ def bias_variable(shape):
 	initial = tf.constant(0.1, shape=shape)
 	return tf.Variable(initial)
 
+def plot(train_accuracies, train_losses, test_accuracies, test_losses):
+	plt.subplot(221)
+	plt.plot(range(len(train_losses)), train_losses)
+	plt.title("Training")
+	plt.ylabel('Loss')
+	
+	plt.subplot(222)
+	plt.plot(range(len(test_losses)), test_losses)
+	plt.title("Test")
+			
+	plt.subplot(223)
+	plt.plot(range(len(train_accuracies)), train_accuracies)
+	plt.ylabel('Accuracy')
+	plt.xlabel('Number of iterations')
+
+	plt.subplot(224)
+	plt.plot(range(len(test_accuracies)), test_accuracies)
+	plt.xlabel('Number of iterations')
+
+	plt.savefig('10x10_5x5_error.png')
 
 def main(_):
 	# Input data
@@ -191,7 +211,7 @@ def main(_):
 			print('iteration {}'.format(i))
 
 			# Evaluate
-			if i % 10 == 0:
+			if i % 100 == 0:
 
 				print('Evaluating')
 				# Evaluate on train set
@@ -229,31 +249,14 @@ def main(_):
 				print('step %d, training accuracy %g, train loss %g, ' \
 					'test accuracy %g, validation loss %g' %
 					(i, train_accuracy, train_loss, test_accuracy, test_loss))
+
+				plot(train_accuracies, train_losses, test_accuracies, test_losses)
 			
 			# Train
 			train_X, train_Y = train_generator.next(batch_size)
 			train_step.run(feed_dict={x: train_X, y_: train_Y, keep_prob: 0.5})
 
-		""" Plot results """
-		plt.subplot(221)
-		plt.plot(range(len(train_losses)), train_losses)
-		plt.title("Training")
-		plt.ylabel('Loss')
-		
-		plt.subplot(222)
-		plt.plot(range(len(test_losses)), test_losses)
-		plt.title("Test")
-				
-		plt.subplot(223)
-		plt.plot(range(len(train_accuracies)), train_accuracies)
-		plt.ylabel('Accuracy')
-		plt.xlabel('Number of iterations')
-
-		plt.subplot(224)
-		plt.plot(range(len(test_accuracies)), test_accuracies)
-		plt.xlabel('Number of iterations')
-
-		plt.savefig('10x10_5x5_error.png')
+	plot(train_accuracies, train_losses, test_accuracies, test_losses)
 
 # Run the program 
 if __name__ == '__main__':
