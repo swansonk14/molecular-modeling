@@ -34,14 +34,18 @@ class Generator():
 
 		return images, labels
 
-	def all_data(self, batch_size=None):
+	def data_in_batches(self, num_examples=None, batch_size=None):
+		if num_examples is None:
+			num_examples = len(self.metadata)
+		num_examples = min(num_examples, len(self.metadata))
+
 		if batch_size is None:
 			batch_size = len(self.metadata)
 
 		index = self.index
 		self.index = 0
 
-		while self.index + batch_size <= len(self.metadata):
+		while self.index + batch_size <= num_examples:
 			yield self.next(batch_size)
 
 		self.index = index

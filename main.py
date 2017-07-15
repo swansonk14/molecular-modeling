@@ -20,7 +20,7 @@ with open('metadata/metadata.json', 'r') as f:
 	metadata = json.load(f)
 
 """ Restrict data """
-data_size = 1000
+data_size = None
 temps = [0.4]
 rhos = [0.05, 0.10]
 
@@ -71,9 +71,11 @@ train_generator = Generator(train_metadata, im_size=im_size)
 test_generator = Generator(test_metadata, im_size=im_size)
 
 """ Hyperparameters """
-iterations = 20000
-eta = 1e-4
 batch_size = 128
+iterations = 20000
+iterations_per_eval = 10
+examples_per_eval = 1000
+eta = 1e-4
 beta = 0.01
 
 """ Function that builds the graph for the neural network """
@@ -208,16 +210,17 @@ def main(_):
 		# Training
 		print('Training')
 		for i in range(iterations):
-			print('iteration {}'.format(i))
+			if i % 5 == 0:
+				print('iteration {}'.format(i))
 
 			# Evaluate
-			if i % 100 == 0:
-
+			if i % 25 == 0:
+				print('')
 				print('Evaluating')
 				# Evaluate on train set
 				train_batch_accuracies = []
 				train_batch_losses = []
-				for train_X, train_Y in train_generator.all_data(batch_size):
+				for train_X, train_Y in train_generator.data_in_batches(examples_per_eval, batch_size):
 					train_batch_accuracies.append(accuracy.eval(feed_dict={
 							x: train_X, y_: train_Y, keep_prob: 1.0}))
 
@@ -233,7 +236,7 @@ def main(_):
 				# Evaluate on test set
 				test_batch_accuracies = []
 				test_batch_losses = []
-				for test_X, test_Y in test_generator.all_data(batch_size):
+				for test_X, test_Y in test_generator.data_in_batches(examples_per_eval, batch_size):
 					test_batch_accuracies.append(accuracy.eval(feed_dict={
 							x: test_X, y_: test_Y, keep_prob: 1.0}))
 
@@ -249,6 +252,7 @@ def main(_):
 				print('step %d, training accuracy %g, train loss %g, ' \
 					'test accuracy %g, validation loss %g' %
 					(i, train_accuracy, train_loss, test_accuracy, test_loss))
+				print('')
 
 				plot(train_accuracies, train_losses, test_accuracies, test_losses)
 			
