@@ -73,8 +73,8 @@ print(train_counts)
 print('test counts')
 print(test_counts)
 
-train_generator = Generator(train_data)
-test_generator = Generator(test_data)
+train_generator = Generator(train_metadata)
+test_generator = Generator(test_metadata)
 
 """ Hyperparameters """
 iterations = 20000
